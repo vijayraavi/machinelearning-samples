@@ -25,7 +25,7 @@ namespace BikeSharingDemand
             var mlContext = new MLContext();
 
 
-            var regressionLearner = new (string name, IEstimator<ITransformer> value)[]
+            var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
             {
                 ("FastTree", mlContext.Regression.Trainers.FastTree("Label", "Features")),
                 ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent("Label", "Features")),
@@ -38,8 +38,8 @@ namespace BikeSharingDemand
             };
 
 
-            // Train, evaluate and test each of the regression trainers above
-            foreach (var learner in regressionLearner)
+            // Train, evaluate and test each of the regression learners above
+            foreach (var learner in regressionLearners)
             {
                 var modelBuilder = new ModelBuilder(dataPreprocessingPipeline, learner.value);
                 modelBuilder.Train(trainingData);
@@ -48,7 +48,8 @@ namespace BikeSharingDemand
                 modelBuilder.PrintRegressionMetrics($"{learner.name} regression model", metrics);
             }
 
-            
+            // Fix these tomorrow
+
             // 4. Visualize some predictions compared to observations from the test dataset
 
             //var fastTreeTester = new ModelTester<RegressionPredictionTransformer<FastTreeRegressionPredictor>>();
