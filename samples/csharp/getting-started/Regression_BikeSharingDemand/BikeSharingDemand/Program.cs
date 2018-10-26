@@ -14,6 +14,7 @@ namespace BikeSharingDemand
 
         static void Main(string[] args)
         {
+            // Set a random seed for repeatable results.
             var mlContext = new MLContext(seed: 0);
 
             // 1. Common data and data pre-processing
