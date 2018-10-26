@@ -14,7 +14,7 @@ namespace BikeSharingDemand
 
         static void Main(string[] args)
         {
-            var mlContext = new MLContext();
+            var mlContext = new MLContext(seed: 0);
 
             // 1. Common data and data pre-processing
             var trainingDataView = mlContext.CreateDataView(BikeSharingData.ReadCsv(TrainingDataLocation));
