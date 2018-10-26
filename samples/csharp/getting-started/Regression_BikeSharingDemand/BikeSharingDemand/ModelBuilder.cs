@@ -14,20 +14,22 @@ namespace BikeSharingDemand
     {
         private MLContext _mlcontext;
         private IEstimator<ITransformer> _trainingPipeline;
+
+        public ITransformer TrainedModel => _trainedModel;
         private ITransformer _trainedModel;
 
         public ModelBuilder(
-            IEstimator<ITransformer> dataPreprocessingPipeline,
+            IEstimator<ITransformer> dataPreprocessPipeline,
             IEstimator<ITransformer> regressionLearner)
         {
             _mlcontext = new MLContext();
-            _trainingPipeline = dataPreprocessingPipeline.Append(regressionLearner);
+            _trainingPipeline = dataPreprocessPipeline.Append(regressionLearner);
         }
         
-        public void Train(IDataView trainingData)
+        public ITransformer Train(IDataView trainingData)
         {
             Console.WriteLine("=============== Training model ===============");
-            _trainedModel = _trainingPipeline.Fit(trainingData);
+            return _trainedModel = _trainingPipeline.Fit(trainingData);
         }
 
         public void TestSinglePrediction()      

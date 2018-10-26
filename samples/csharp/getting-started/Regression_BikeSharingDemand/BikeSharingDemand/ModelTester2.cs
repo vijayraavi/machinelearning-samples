@@ -10,16 +10,12 @@ using System.Linq;
 
 namespace BikeSharingDemand.Model
 {
-    public sealed class ModelTester2<TPredictionTransformer> where TPredictionTransformer : class, ITransformer
+    public static class ModelTester2
     {
-        /// <summary>
-        /// Using test data and model, it shows the predicted versus the observed data
-        /// </summary>
-        ///      
-        public void VisualizeSomePredictions(string modelName, string testDataLocation, TransformerChain<TPredictionTransformer> model, int numberOfPredictions)
+        public static void VisualizeSomePredictions(string modelName, string testDataLocation, ITransformer model, int numberOfPredictions)
         {
             //Prediction test
-            var mlcontext = new LocalEnvironment();
+            var mlcontext = new MLContext();
 
             // Create prediction engine 
             var engine = model.MakePredictionFunction<BikeSharingDemandSample, BikeSharingDemandPrediction>(mlcontext);
@@ -43,18 +39,5 @@ namespace BikeSharingDemand.Model
             Console.WriteLine($"=======================================================");
             Console.WriteLine();
         }
-
-        //public void PrintRegressionMetrics(string name, RegressionEvaluator.Result metrics)
-        //{
-        //    Console.WriteLine($"*************************************************");
-        //    Console.WriteLine($"*       Metrics for {name}          ");
-        //    Console.WriteLine($"*------------------------------------------------");
-        //    Console.WriteLine($"*       LossFn: {metrics.LossFn:0.##}");
-        //    Console.WriteLine($"*       R2 Score: {metrics.RSquared:0.##}");
-        //    Console.WriteLine($"*       Absolute loss: {metrics.L1:#.##}");
-        //    Console.WriteLine($"*       Squared loss: {metrics.L2:#.##}");
-        //    Console.WriteLine($"*       RMS loss: {metrics.Rms:#.##}");
-        //    Console.WriteLine($"*************************************************");
-        //}
     }
 }

@@ -14,8 +14,9 @@ namespace BikeSharingDemand.Helpers
 {
     public static class ConsoleHelper
     {
-        public static List<BikeSharingDemandSample> PeekDataViewInConsole(LocalEnvironment context, IDataView dataView, EstimatorChain<ITransformer> pipeline, int numberOfRows = 4)
+        public static List<BikeSharingDemandSample> PeekDataViewInConsole(IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
         {
+            LocalEnvironment mlContext = new LocalEnvironment();
             string msg = string.Format("Show {0} rows with all the columns", numberOfRows.ToString());
             ConsoleWriteHeader(msg);
 
@@ -24,7 +25,7 @@ namespace BikeSharingDemand.Helpers
 
             // 'transformedData' is a 'promise' of data, lazy-loading. Let's actually read it.
             // Convert to an enumerable of user-defined type.
-            var someRows = transformedData.AsEnumerable<BikeSharingDemandSample>(context, reuseRowObject: false)
+            var someRows = transformedData.AsEnumerable<BikeSharingDemandSample>(mlContext, reuseRowObject: false)
                                            //.Where(x => x.Count > 0)
                                            // Take a couple values as an array.
                                            .Take(numberOfRows)
@@ -36,15 +37,16 @@ namespace BikeSharingDemand.Helpers
             return someRows;
         }
 
-        public static List<float[]> PeekFeaturesColumnDataInConsole(string columnName, LocalEnvironment mlcontext, IDataView dataView, EstimatorChain<ITransformer> pipeline, int numberOfRows = 4)
+        public static List<float[]> PeekFeaturesColumnDataInConsole(string columnName, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
         {
+            LocalEnvironment mlContext = new LocalEnvironment();
             string msg = string.Format("Show {0} rows with just the '{1}' column", numberOfRows, columnName );
             ConsoleWriteHeader(msg);
 
             var transformedData = pipeline.Fit(dataView).Transform(dataView);
             // Extract the 'Features' column.
             
-            var someColumnData = transformedData.GetColumn<float[]>(mlcontext, columnName)
+            var someColumnData = transformedData.GetColumn<float[]>(mlContext, columnName)
                                                         .Take(numberOfRows).ToList();
 
             // print to console the peeked rows

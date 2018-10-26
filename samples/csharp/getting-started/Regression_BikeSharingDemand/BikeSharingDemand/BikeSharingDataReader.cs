@@ -6,10 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BikeSharingDemand.Model
+namespace BikeSharingDemand
 {
     public static class BikeSharingDataReader
     {
+        private static TextLoader _loader;
+
+        public static IEstimator<ITransformer> DataPreprocessPipeline => _dataPreprocessPipeline;
+        private static IEstimator<ITransformer> _dataPreprocessPipeline;
+
         private static TextLoader.Arguments _bikeSharingTextArgs =
             new TextLoader.Arguments()
             {
@@ -39,14 +44,15 @@ namespace BikeSharingDemand.Model
             "Weather", "Temperature", "NormalizedTemperature",
             "Humidity", "Windspeed" };
 
-        private static TextLoader _loader;
-        private static IEstimator<ITransformer> _dataPreprocessingPipeline;
-
         static BikeSharingDataReader()
         {
             var mlContext = new MLContext();
+
+            //Create TextReader
             _loader = mlContext.Data.TextReader(_bikeSharingTextArgs);
-            _dataPreprocessingPipeline =
+
+            //Create Preprocess Pipeline
+            _dataPreprocessPipeline =
                 // Copy the Count column to the Label column
                 new CopyColumnsEstimator(mlContext, "Count", "Label")
 
@@ -59,6 +65,5 @@ namespace BikeSharingDemand.Model
             return _loader.Read(filePath);
         }
 
-        public static IEstimator<ITransformer> DataPreprocessingPipeline => _dataPreprocessingPipeline;
     }
 }
