@@ -5,18 +5,17 @@ using System.Linq;
 using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
-using BikeSharingDemand.BikeSharingDemandData;
 using Microsoft.ML.Core.Data;
 using System.Collections.Generic;
 using Microsoft.ML.Data;
+using Microsoft.ML;
 
 namespace BikeSharingDemand.Helpers
 {
     public static class ConsoleHelper
     {
-        public static List<BikeSharingDemandSample> PeekDataViewInConsole(IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
+        public static List<BikeSharingData.DemandSample> PeekDataViewInConsole(MLContext mlContext, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
         {
-            LocalEnvironment mlContext = new LocalEnvironment();
             string msg = string.Format("Show {0} rows with all the columns", numberOfRows.ToString());
             ConsoleWriteHeader(msg);
 
@@ -25,7 +24,7 @@ namespace BikeSharingDemand.Helpers
 
             // 'transformedData' is a 'promise' of data, lazy-loading. Let's actually read it.
             // Convert to an enumerable of user-defined type.
-            var someRows = transformedData.AsEnumerable<BikeSharingDemandSample>(mlContext, reuseRowObject: false)
+            var someRows = transformedData.AsEnumerable<BikeSharingData.DemandSample>(mlContext, reuseRowObject: false)
                                            //.Where(x => x.Count > 0)
                                            // Take a couple values as an array.
                                            .Take(numberOfRows)
@@ -37,9 +36,8 @@ namespace BikeSharingDemand.Helpers
             return someRows;
         }
 
-        public static List<float[]> PeekFeaturesColumnDataInConsole(string columnName, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
+        public static List<float[]> PeekFeaturesColumnDataInConsole(MLContext mlContext, string columnName, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
         {
-            LocalEnvironment mlContext = new LocalEnvironment();
             string msg = string.Format("Show {0} rows with just the '{1}' column", numberOfRows, columnName );
             ConsoleWriteHeader(msg);
 
@@ -62,7 +60,7 @@ namespace BikeSharingDemand.Helpers
             return someColumnData;
         }
 
-            public static void ConsoleWriteHeader(params string[] lines)
+        public static void ConsoleWriteHeader(params string[] lines)
         {
             var defaultColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Yellow;

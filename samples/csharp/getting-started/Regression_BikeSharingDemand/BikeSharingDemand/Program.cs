@@ -2,11 +2,12 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using BikeSharingDemand.BikeSharingDemandData;
 using BikeSharingDemand.Helpers;
-using BikeSharingDemand.Model;
+using BikeSharingDemand.BikeSharingModel;
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
+using Microsoft.ML.Runtime;
+using Microsoft.ML.Runtime.Api;
 
 namespace BikeSharingDemand
 {
@@ -17,28 +18,24 @@ namespace BikeSharingDemand
 
         static void Main(string[] args)
         {
-            // 1. (CESARDL) Common data and data pre-processing
-            var trainingDataView = BikeSharingDataLoader.GetDataView(TrainingDataLocation);
-            var testDataView = BikeSharingDataLoader.GetDataView(TestDataLocation);
-            var dataPreprocessPipeline = BikeSharingDataPreprocessor.DataPreprocessPipeline;
+            var mlContext = new MLContext();
 
-            // 1. (OLDER - DataLoad and Transformations are coupled) Common data and data pre-processing
-            //var trainingDataView = BikeSharingDataReader.Read(TrainingDataLocation);
-            //var testDataView = BikeSharingDataReader.Read(TestDataLocation);
-            //var dataPreprocessPipeline = BikeSharingDataReader.DataPreprocessPipeline;
+            // 1. Common data and data pre-processing
+            var trainingDataView = mlContext.CreateDataView(BikeSharingData.ReadCsv(TrainingDataLocation));
+            var testDataView = mlContext.CreateDataView(BikeSharingData.ReadCsv(TestDataLocation));
+            var dataPreprocessor = new BikeSharingDataPreprocessor(mlContext);
+            var dataPreprocessPipeline = dataPreprocessor.DataPreprocessPipeline;
 
             //Peek data in training DataView after applying the PreprocessPipeline's transformations  
-            ConsoleHelper.PeekDataViewInConsole(trainingDataView, dataPreprocessPipeline, 10);
-            ConsoleHelper.PeekFeaturesColumnDataInConsole("Features", trainingDataView, dataPreprocessPipeline, 10);
-
-            var mlContext = new MLContext();
+            ConsoleHelper.PeekDataViewInConsole(mlContext, trainingDataView, dataPreprocessPipeline, 10);
+            ConsoleHelper.PeekFeaturesColumnDataInConsole(mlContext, "Features", trainingDataView, dataPreprocessPipeline, 10);
 
             var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
             {
-                ("FastTree", mlContext.Regression.Trainers.FastTree("Label", "Features")),
-                //("OnlineGradientDescent", mlContext.Regression.Trainers.OnlineGradientDescent("Label", "Features")),
-                ("Poisson", mlContext.Regression.Trainers.PoissonRegression("Label", "Features")),
-                ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent("Label", "Features"))
+                ("FastTree", mlContext.Regression.Trainers.FastTree()),
+                ("OnlineGradientDescent", mlContext.Regression.Trainers.OnlineGradientDescent()),
+                ("Poisson", mlContext.Regression.Trainers.PoissonRegression()),
+                ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent())
                 //Other possible learners that could be included
                 //...FastForestRegressor...
                 //...FastTreeTweedieRegressor...
@@ -49,7 +46,7 @@ namespace BikeSharingDemand
             foreach (var learner in regressionLearners)
             {
                 // Train the model
-                var modelBuilder = new ModelBuilder(dataPreprocessPipeline, learner.value);
+                var modelBuilder = new BikeSharingModel(dataPreprocessPipeline, learner.value);
                 var trainedModel = modelBuilder.Train(trainingDataView);
 
                 //Test single prediction

@@ -9,10 +9,9 @@ using System.Text;
 
 namespace BikeSharingDemand
 {
-    public static class BikeSharingDataPreprocessor
+    public class BikeSharingDataPreprocessor
     {
-        public static IEstimator<ITransformer> DataPreprocessPipeline => _dataPreprocessPipeline;
-        private static IEstimator<ITransformer> _dataPreprocessPipeline;
+        public IEstimator<ITransformer> DataPreprocessPipeline { get; private set; }
 
         private static string[] _featureColumns = new[] {
             "Season", "Year", "Month",
@@ -20,11 +19,10 @@ namespace BikeSharingDemand
             "Weather", "Temperature", "NormalizedTemperature",
             "Humidity", "Windspeed" };
 
-        static BikeSharingDataPreprocessor()
+        public BikeSharingDataPreprocessor(MLContext mlContext)
         {
-            //Configure data transformations in the Preprocess pipeline
-            var mlContext = new MLContext();
-            _dataPreprocessPipeline =
+            // Configure data transformations in the Preprocess pipeline
+            DataPreprocessPipeline =
                 // Copy the Count column to the Label column
                 new CopyColumnsEstimator(mlContext, "Count", "Label")
                     // Concatenate all the numeric columns into a single features column

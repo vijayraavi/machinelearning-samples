@@ -1,6 +1,4 @@
-﻿using BikeSharingDemand.BikeSharingDemandData;
-using BikeSharingDemand.Helpers;
-using Microsoft.ML;
+﻿using Microsoft.ML;
 using Microsoft.ML.Core.Data;
 using Microsoft.ML.Runtime;
 using Microsoft.ML.Runtime.Data;
@@ -8,7 +6,7 @@ using Microsoft.ML.Runtime.Learners;
 using System;
 using System.Linq;
 
-namespace BikeSharingDemand.Model
+namespace BikeSharingDemand
 {
     public static class ModelTester
     {
@@ -18,10 +16,10 @@ namespace BikeSharingDemand.Model
             var mlcontext = new MLContext();
 
             // Create prediction engine 
-            var engine = model.MakePredictionFunction<BikeSharingDemandSample, BikeSharingDemandPrediction>(mlcontext);
+            var engine = model.MakePredictionFunction<BikeSharingData.DemandSample, BikeSharingData.Prediction>(mlcontext); 
 
-            //Make the provided number of predictions and compare with observed data from the test dataset
-            var testData = new BikeSharingDemandsCsvReader().GetDataFromCsv(testDataLocation).ToList();
+            // Make the provided number of predictions and compare with observed data from the test dataset
+            var testData = BikeSharingData.ReadCsv(testDataLocation);
 
             Console.WriteLine($"=======================================================");
             Console.WriteLine($"=======       Tests with {modelName}       ========");
