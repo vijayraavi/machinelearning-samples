@@ -29,7 +29,7 @@ namespace BikeSharingDemand
             var regressionLearners = new (string name, IEstimator<ITransformer> value)[]
             {
                 ("FastTree", mlContext.Regression.Trainers.FastTree()),
-                ("OnlineGradientDescent", mlContext.Regression.Trainers.OnlineGradientDescent()),
+                //("OnlineGradientDescent", mlContext.Regression.Trainers.OnlineGradientDescent()),
                 ("Poisson", mlContext.Regression.Trainers.PoissonRegression()),
                 ("SDCA", mlContext.Regression.Trainers.StochasticDualCoordinateAscent())
                 //Other possible learners that could be included
