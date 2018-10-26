@@ -16,7 +16,7 @@ namespace BikeSharingDemand
             var mlcontext = new MLContext();
 
             // Create prediction engine 
-            var engine = model.MakePredictionFunction<BikeSharingData.DemandSample, BikeSharingData.Prediction>(mlcontext); 
+            var engine = model.MakePredictionFunction<BikeSharingData.Demand, BikeSharingData.Prediction>(mlcontext); 
 
             // Make the provided number of predictions and compare with observed data from the test dataset
             var testData = BikeSharingData.ReadCsv(testDataLocation);

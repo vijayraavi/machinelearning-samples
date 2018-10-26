@@ -13,7 +13,7 @@ namespace BikeSharingDemand
             public float PredictedCount;
         }
 
-        public class DemandSample
+        public class Demand
         {
             public float Season;
             public float Year;
@@ -30,7 +30,7 @@ namespace BikeSharingDemand
             public float Count;   // This is the observed count, to be used a "label" to predict
         }
 
-        public static List<DemandSample> ReadCsv(string dataLocation)
+        public static List<Demand> ReadCsv(string dataLocation)
         {
             // Since bike demand data fits in memory, we can load it all in memory by
             // using ToList() at the end. This makes the processing more efficient.
@@ -38,7 +38,7 @@ namespace BikeSharingDemand
             return File.ReadLines(dataLocation)
                 .Skip(1)
                 .Select(x => x.Split(','))
-                .Select(x => new DemandSample()
+                .Select(x => new Demand()
                 {
                     Season = float.Parse(x[2]),
                     Year = float.Parse(x[3]),
@@ -55,5 +55,25 @@ namespace BikeSharingDemand
                     Count = float.Parse(x[16])
                 }).ToList();
         }
+
+        public static Demand SingleDemandData =>
+            // Single data
+            // instant,dteday,season,yr,mnth,hr,holiday,weekday,workingday,weathersit,temp,atemp,hum,windspeed,casual,registered,cnt
+            // 13950,2012-08-09,3,1,8,10,0,4,1,1,0.8,0.7576,0.55,0.2239,72,133,205
+            new Demand()
+            {
+                Season = 3,
+                Year = 1,
+                Month = 8,
+                Hour = 10,
+                Holiday = 0,
+                Weekday = 4,
+                WorkingDay = 1,
+                Weather = 1,
+                Temperature = 0.8f,
+                NormalizedTemperature = 0.7576f,
+                Humidity = 0.55f,
+                Windspeed = 0.2239f
+            };
     }
 }

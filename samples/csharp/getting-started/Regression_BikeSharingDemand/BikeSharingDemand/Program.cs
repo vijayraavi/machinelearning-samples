@@ -1,9 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using BikeSharingDemand.Helpers;
-using BikeSharingDemand.BikeSharingModel;
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
 using Microsoft.ML.Runtime;
@@ -45,22 +41,23 @@ namespace BikeSharingDemand
             // Per each regression trainer, Train, Evaluate, Test and Save a different model
             foreach (var learner in regressionLearners)
             {
-                // Train the model
-                var modelBuilder = new BikeSharingModel(dataPreprocessPipeline, learner.value);
-                var trainedModel = modelBuilder.Train(trainingDataView);
+                Console.WriteLine("================== Training model ==================");
+                var model = new BikeSharingModel(mlContext, dataPreprocessPipeline, learner.value);
+                var trainedModel = model.Train(trainingDataView);
 
-                //Test single prediction
-                modelBuilder.TestSinglePrediction();
+                Console.WriteLine("========= Predict a single data point ===============");
+                var prediction = model.PredictSingle(BikeSharingData.SingleDemandData);
+                ConsoleHelper.PrintPrediction(prediction);
 
-                //Evaluate model's accuracy
-                var metrics = modelBuilder.Evaluate(testDataView);
-                modelBuilder.PrintRegressionMetrics($"{learner.name} regression model", metrics);
+                Console.WriteLine("===== Evaluating Model's accuracy with Test data =====");
+                var metrics = model.Evaluate(testDataView);
+                ConsoleHelper.PrintRegressionMetrics(learner.name, metrics);
 
                 //Visualize 10 tests comparing prediction with actual/observed values from the test dataset
                 ModelTester.VisualizeSomePredictions(learner.name, TestDataLocation, trainedModel, 10);
 
                 //Save the model file that can be used by any application
-                modelBuilder.SaveModelAsFile($"./{learner.name}Model.zip");
+                model.SaveAsFile($"./{learner.name}Model.zip");
             }
 
             Console.ReadLine();

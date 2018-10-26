@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.ML;
 using Microsoft.ML.Core.Data;
+using Microsoft.ML.Runtime.Api;
 using Microsoft.ML.Runtime.Data;
 
 namespace BikeSharingDemand
@@ -12,76 +14,53 @@ namespace BikeSharingDemand
         private IEstimator<ITransformer> _trainingPipeline;
 
         public ITransformer TrainedModel { get; private set; }
-        public PredictionFunction<BikeSharingData.DemandSample, BikeSharingData.Prediction> PredictionFunction { get; private set;}
+        public PredictionFunction<BikeSharingData.Demand, BikeSharingData.Prediction> PredictionFunction { get; private set;}
 
         public BikeSharingModel(
+            MLContext mlContext,
             IEstimator<ITransformer> dataPreprocessPipeline,
             IEstimator<ITransformer> regressionLearner)
         {
-            _mlcontext = new MLContext();
+            _mlcontext = mlContext;
             _trainingPipeline = dataPreprocessPipeline.Append(regressionLearner);
         }
         
         public ITransformer Train(IDataView trainingData)
         {
-            Console.WriteLine("=============== Training model ===============");
             TrainedModel = _trainingPipeline.Fit(trainingData);
-            PredictionFunction = TrainedModel.MakePredictionFunction<BikeSharingData.DemandSample, BikeSharingData.Prediction>(_mlcontext);
+            PredictionFunction = TrainedModel.MakePredictionFunction<BikeSharingData.Demand, BikeSharingData.Prediction>(_mlcontext);
             return TrainedModel;
         }
 
-        public void TestSinglePrediction()      
+        /// <summary>
+        /// For single prediction it's easier to use the PredictionFunction
+        /// beacuse we can directly use the BikeSharingData.DemandSample and
+        /// BikeSharingData.Prediction classes instead of IDataView.
+        /// </summary>
+        /// <param name="input">Single data</param>
+        /// <returns>Prediction for the input data</returns>
+        public BikeSharingData.Prediction PredictSingle(BikeSharingData.Demand input)
         {
             CheckTrained();
+            return PredictionFunction.Predict(input);
+        }
 
-            //Sample: 
-            // instant,dteday,season,yr,mnth,hr,holiday,weekday,workingday,weathersit,temp,atemp,hum,windspeed,casual,registered,cnt
-            // 13950,2012-08-09,3,1,8,10,0,4,1,1,0.8,0.7576,0.55,0.2239,72,133,205
-            var demandSample = new BikeSharingData.DemandSample()
-            {
-                Season = 3,
-                Year = 1,
-                Month = 8,
-                Hour = 10,
-                Holiday = 0,
-                Weekday = 4,
-                WorkingDay = 1,
-                Weather = 1,
-                Temperature = (float)0.8,
-                NormalizedTemperature = (float)0.7576,
-                Humidity = (float)0.55,
-                Windspeed = (float)0.2239
-            };
-
-            var prediction = PredictionFunction.Predict(demandSample);
-            Console.WriteLine($"*************************************************");
-            Console.WriteLine($"Predicted : {prediction.PredictedCount}");
-            Console.WriteLine($"*************************************************");
+        public IEnumerable<BikeSharingData.Prediction> PredictBatch(IDataView inputDataView)
+        {
+            CheckTrained();
+            var predictions = TrainedModel.Transform(inputDataView);
+            return predictions.AsEnumerable<BikeSharingData.Prediction>(_mlcontext, reuseRowObject: false);
         }
 
         public RegressionEvaluator.Result Evaluate(IDataView testData)
         {
             CheckTrained();
-            Console.WriteLine("=============== Evaluating Model's accuracy with Test data===============");
             var predictions = TrainedModel.Transform(testData);
             var metrics = _mlcontext.Regression.Evaluate(predictions, "Count", "Score");
             return metrics;
         }
 
-        public void PrintRegressionMetrics(string name, RegressionEvaluator.Result metrics)
-        {
-            Console.WriteLine($"*************************************************");
-            Console.WriteLine($"*       Metrics for {name}          ");
-            Console.WriteLine($"*------------------------------------------------");
-            Console.WriteLine($"*       LossFn: {metrics.LossFn:0.##}");
-            Console.WriteLine($"*       R2 Score: {metrics.RSquared:0.##}");
-            Console.WriteLine($"*       Absolute loss: {metrics.L1:#.##}");
-            Console.WriteLine($"*       Squared loss: {metrics.L2:#.##}");
-            Console.WriteLine($"*       RMS loss: {metrics.Rms:#.##}");
-            Console.WriteLine($"*************************************************");
-        }
-
-        public void SaveModelAsFile(string persistedModelPath)
+        public void SaveAsFile(string persistedModelPath)
         {
             CheckTrained();
             using (var fs = new FileStream(persistedModelPath, FileMode.Create, FileAccess.Write, FileShare.Write))
