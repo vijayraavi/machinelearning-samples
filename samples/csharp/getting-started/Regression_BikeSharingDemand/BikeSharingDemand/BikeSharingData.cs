@@ -35,7 +35,7 @@ namespace BikeSharingDemand
             // Since bike demand data fits in memory, we can load it all in memory by
             // using ToList() at the end. This makes the processing more efficient.
             // For larger dataset, the data can be read as IEnumerable instead.
-            return File.ReadAllLines(dataLocation)
+            return File.ReadLines(dataLocation)
                 .Skip(1)
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => x.Split(','))
