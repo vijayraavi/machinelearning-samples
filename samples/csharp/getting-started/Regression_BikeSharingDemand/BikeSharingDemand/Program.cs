@@ -60,7 +60,7 @@ namespace BikeSharingDemand
                 modelBuilder.PrintRegressionMetrics($"{learner.name} regression model", metrics);
 
                 //Visualize 10 tests comparing prediction with actual/observed values from the test dataset
-                ModelTester2.VisualizeSomePredictions(learner.name, TestDataLocation, trainedModel, 10);
+                ModelTester.VisualizeSomePredictions(learner.name, TestDataLocation, trainedModel, 10);
 
                 //Save the model file that can be used by any application
                 modelBuilder.SaveModelAsFile($"./{learner.name}Model.zip");

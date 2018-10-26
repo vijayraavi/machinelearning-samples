@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace BikeSharingDemand.Model
 {
-    public static class ModelTester2
+    public static class ModelTester
     {
         public static void VisualizeSomePredictions(string modelName, string testDataLocation, ITransformer model, int numberOfPredictions)
         {
